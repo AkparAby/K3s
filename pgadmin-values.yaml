@@ -1,0 +1,51 @@
+# pgadmin-values.yaml
+# pgAdmin4 的基本配置
+pgadmin4:
+  email: "admin@liangdian.com" # 登录 pgAdmin4 的用户名 (邮箱格式)
+  password: "root" # *** 请务必替换为强密码 ***
+
+# 服务配置 - 通常为 ClusterIP，因为 Ingress Controller 会负责外部流量
+service:
+  type: ClusterIP # pgAdmin4 服务在集群内部，由 Ingress 路由
+  port: 80
+
+# 持久化存储 (可选，用于保存 pgAdmin4 配置和服务器列表)
+persistence:
+  enabled: true
+  storageClass: longhorn # 使用 Longhorn 存储
+  size: 5Gi # 存储空间大小
+
+# 资源限制 (可选，推荐在生产环境配置)
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Ingress 配置 
+ingress:
+  enabled: true # 启用 Ingress
+  className: traefik # K3s 默认的 Ingress Controller 名称是 Traefik
+  hostname: pgadmin.local-test.com # *** 这是一个虚拟域名，可以在本地 hosts 文件中映射 ***
+  path: / # 访问路径
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web # 默认 HTTP 入口点
+
+  # TLS 配置 (可选，如果希望测试 HTTPS，即使没有实际证书)
+  # tls: true
+  # secretName: pgadmin-tls-test # 这是一个占位符，如果启用TLS，需要手动创建自签名证书Secret或者用cert-manager
+
+# 连接到已部署的 PostgreSQL 数据库 (可选，您可以手动添加，也可以在这里预配置)
+# 您需要知道 PostgreSQL 的 Service 名称和端口，以及用户名和密码。
+# 参考之前部署 PostgreSQL 后输出的连接信息。
+# servers:
+#   pgserver:
+#     Name: "My PostgreSQL HA"
+#     Host: "postgresql.default.svc.cluster.local" # PostgreSQL Service 的完整 DNS 名称
+#     Port: 5432
+#     Username: "root" # 您在 PostgreSQL values.yaml 中设置的用户名
+#     Password: "YOUR_POSTGRES_PASSWORD" # 您在 PostgreSQL values.yaml 中设置的密码
+#     SSLMode: "prefer"
+#     MaintenanceDB: "benefits" # 您在 PostgreSQL values.yaml 中设置的数据库名

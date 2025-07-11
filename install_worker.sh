@@ -1,5 +1,6 @@
 #!/bin/bash
-
+K3S_URL=https://xxx.xx.x.xx:6443
+K3S_TOKEN=xxxxxx
 set -e
 
 echo "🧹 卸载旧的 k3s-agent..."

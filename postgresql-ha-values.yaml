@@ -1,0 +1,49 @@
+# postgres-ha-values.yaml
+# PostgreSQL 的基本配置
+auth:
+  username: root # 数据库用户名，可以修改
+  password: "root" # *** 请务必替换为强密码 ***
+  database: benefits # 可以创建一个默认数据库
+
+# PostgreSQL 数据持久化配置
+persistence:
+  enabled: true # 启用持久化
+  storageClass: longhorn # *** 指定使用 Longhorn 的 StorageClass ***
+  size: 20Gi # 主数据库和每个副本的数据卷大小，根据需求调整
+
+# 主数据库配置 (Primary)
+primary:
+  replicaCount: 1 # 主数据库通常是 1 个副本
+  persistence:
+    enabled: true
+    storageClass: longhorn # 主数据库也使用 Longhorn 存储
+    size: 20Gi # 主数据库的持久卷大小 (与全局 persistence.size 保持一致或单独指定)
+
+# 只读副本配置 (Read Replicas)
+readReplicas:
+  replicaCount: 1 # *** 部署 1 个只读副本，加上主数据库共 2 个 PostgreSQL 实例 (一主一副) ***
+  persistence:
+    enabled: true
+    storageClass: longhorn # 只读副本也使用 Longhorn 存储
+    size: 20Gi # 每个只读副本的持久卷大小 (与全局 persistence.size 保持一致或单独指定)
+
+# PostgreSQL 资源限制 (推荐在生产环境配置，请根据您的节点资源调整)
+resources:
+  requests:
+    cpu: 500m # 请求 0.5 个 CPU 核心
+    memory: 1Gi # 请求 1GB 内存
+  limits:
+    cpu: 2000m # 限制最大使用 2 个 CPU 核心
+    memory: 2Gi # 限制最大使用 2GB 内存
+
+# 服务配置 (ClusterIP 用于集群内部访问)
+service:
+  type: ClusterIP
+  port: 5432
+
+# 高可用性 (HA) 相关的额外组件和配置
+# 开启 PostgreSQL 复制 (pg_basebackup, streaming replication)
+replication:
+  enabled: true
+  synchronousCommit: off # 默认异步复制，如果需要强一致性可以设置为 'on' 或 'local'
+  numSynchronousReplicas: 0 # 如果 synchronousCommit: on，需要设置同步副本数量
